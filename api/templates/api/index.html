@@ -1,0 +1,217 @@
+{% load static %}
+{% load divider %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'api/style.css' %}">
+    <script src="{% static 'api/switch.js' %}" defer></script>
+    <script src="{% static 'api/modal.js' %}" defer></script>
+    <script src="{% static 'api/account.js' %}" defer></script>
+    <link rel="shortcut icon" href="{% static 'api/images/logo.png' %}" />
+    <title>RuEstate</title>
+</head>
+<body>
+  <div class="wrapper">
+  <div class="content">
+    <nav class="menu">
+        <div class="menu__container">
+          <div class="menu__upper">
+            <div class="menu__logo">
+              <span class="menu__label">RuEstate</span>
+              <img src="../static/api/images/logo.png" alt="" class="head__logo_image">
+            </div>
+            <div class="menu__search">
+              <form action="{% url 'searched' %}" method="POST">
+                {% csrf_token %}
+                <input type="text" class="menu__field" name="search" placeholder="Поиск" />
+                <button><img src='../static/api/images/search.png' alt="" /></button>
+              </form>
+            </div>
+          </div>
+          <div class="menu__lower">
+            <div class="menu__list">
+              <a href="{% url 'index' %}">Главная</a>
+              <a href="{% url 'dashboard' %}">Доска</a>
+              <a href="{% url 'report' %}">Отчеты</a>
+              <a href="{% url 'contact' %}">Контакты</a>
+            </div>
+            <div class="menu__action">
+              <div class="menu__lang">
+                <a href="{% url 'remain_currency' %}">₽</a>
+              </div>
+              <div class="menu__lang">
+                <a href="{% url 'change_currency' %}">$</a>
+              </div>
+              <div class="menu__login">
+                {% if not request.user.is_authenticated %}
+                  <a href="#" id="login-button">Войти</a>
+                {% else %}
+                  <a href="#" id="account-button">{{ request.user.email }}</a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <div class="account hidden">
+        <div class="account__body">
+          <div class="account__head">
+            Аккаунт
+          </div>
+          <div>
+            Пользователь: {{ request.user.email }} <br><br>
+            Роль:
+            {% if request.user.is_superuser  %} 
+            Админ
+            {% else  %}
+            Клиент
+            {% endif %}
+          </div>
+          <div>
+            <a href="{% url 'logout_view' %}" class="account__quit">Выйти</a>
+          </div>
+        </div>
+      </div>
+      {% if modal == 'login' %}
+      <div class="modal opened">
+      {% else %}
+      <div class="modal hidden">
+      {% endif %}
+        <div class="modal__body">
+          <div class="modal__login">
+            Войти в аккаунт
+          </div>
+          <form action="{% url 'login' %}" method="POST" class="modal__form">
+            {% csrf_token %}
+            <input type="email" class="modal__field" name="email" placeholder="E-mail" required>
+            <input type="password" class="modal__field" name="password" placeholder="Пароль" required>
+            <a href="#" class="modal__forget">Забыли пароль?</a>
+            {% if modal == 'login' %}
+            <span class="modal__message">Введенные данные неверны</span>
+            {% endif %}
+            <button class="modal__button">Войти</button>
+            <a href="#" class="modal__toward" id="register-button"><img src="../static/api/images/exit.png" alt="" class="modal__ico"> Регистрация</a>
+          </form>
+        </div>
+        <div class="modal__cross" id="cross-button">
+          &times;
+        </div>
+      </div>
+      {% if modal == 'register' %}
+      <div class="modalreg opened">
+      {% else %}
+      <div class="modalreg hidden">
+      {% endif %}
+        <div class="modal__body">
+          <div class="modal__login">
+            Регистрация аккаунта
+          </div>
+          <form action="{% url 'register' %}" method="POST" class="modal__form_second">
+            {% csrf_token %}
+            {% for field in form %}
+            <!-- <div class="popup__input"> -->
+                <input 
+                    type="{% if 'password' in field.label_tag %}password{% else %}email{% endif %}"
+                    name="{{ field.html_name }}"
+                    id="password-{{ forloop.counter }}"
+                    {% if field.id_for_label == 'id_email' %}
+                        placeholder="Email"
+                        class="modal__field"
+                    {% elif field.id_for_label == 'id_password1' %}
+                        placeholder="Пароль"
+                        class="modal__field"
+                    {% else %}
+                        placeholder="Подтверждение пароля"
+                        class="modal__field"
+                    {% endif %}
+                    required
+                >
+            {% endfor %}
+            {% if modal == 'register' %}
+            <span class="modal__message">Введенные данные некорректны</span>
+            {% endif %}
+            <button type="submit" class="modal__button">Регистрация</button>
+            <a href="#" class="modal__toward" id="login-button-switch"><img src="../static/api/images/exit.png" alt="" class="modal__ico"> Войти</a>
+          </form>
+        </div>
+        <div class="modal__cross" id="cross-button-reg">
+          &times;
+        </div>
+      </div>
+      {% if modal == 'register' or modal == 'login' %}
+        <div class="overlay opened" id="overlay"></div>
+      {% else %}
+        <div class="overlay hidden" id="overlay"></div>
+      {% endif %}
+    
+    <div class="frame">
+        <div class="title">RuEstate - Недвижимость</div>
+        <div class="card">Алтайский край</div>
+        <div class="switch">
+            <a href="#" class="switch__link main" onclick="openSection(this.id)" id="1">Цель сайта</a>
+            <a href="#" class="switch__link" onclick="openSection(this.id)"id="2">Главные факты</a>
+            <a href="#" class="switch__link" onclick="openSection(this.id)" id="3">Статистика</a>
+            <a href="#" class="switch__link" onclick="openSection(this.id)" id="4">Отчеты</a>
+        </div>
+        <div class="container">
+            <div class="container__section activate-section">
+              Цель ресурса - помочь покупателю купить недвижимость, а продавцу продать недвижимость. На сайте есть информация, о проведении торгов по продаже муниципальной и федеральной земли, полученная из различных официальных открытых источников информации. Агентства недвижимости и частные лица публикуют здесь объявления по продаже квартир, земельных участков, коммерческой недвижимости, гаражей и комнат. На сайте организован удобный поиск по объектам недвижимости, дизайн полностью адаптирован для просмотра на мобильных устройствах.
+            </div>
+            <div class="container__section">
+              Ожидается, что к 2024 году объем мирового рынка недвижимости достигнет ошеломляющей величины в 637,80 трлн долларов. Среди различных сегментов рынка доминирует жилая недвижимость с прогнозируемым объемом рынка в 518,90 трлн долларов США в том же году. Заглядывая в будущее, ожидается, что годовой темп роста сектора составит 3,41% (2024-2028 гг.), в результате чего к 2028 году объем рынка составит 729,40 трлн долларов США. В глобальном контексте стоит отметить, что Китай, как ожидается, будет генерировать самую высокую стоимость на рынке недвижимости, и на 2024 год прогнозируется впечатляющий объем в 135,70 трлн долларов.
+            </div>
+            <div class="container__section">
+              На сайте присутствует статистика цен недвижимости в Алтайском крае и доска объявлений от различных людей. Можно просмотреть таблицу с изменением цен, выбрать год для сверки, связаться с человеком, который выставил объявление.
+            </div>
+            <div class="container__section">
+              На сайте присутствует список различных отчетов в форматах PDF доступный для скачивания. У отчетов есть названия, описание для удобного выбора и выгрузки из сайта даже без авторизации
+            </div>
+        </div>
+        <div class="title-2">Статистика</div>
+        <div class="container">
+          <a href="{% url 'index' %}" class="year-btn">2023</a>
+          <a href="{% url 'index' year=2022 %}" class="year-btn">2022</a>
+        </div>
+        <div class="table">
+          <div class="row">
+            <div class="div1 bold">Период</div>
+            <div class="div2 bold">Стоимость</div>
+            <div class="div3 bold">Изменение</div> 
+          </div>
+          {% for month in months %}
+            <div class="row">
+              <div class="div1">{{ month.period }}</div>
+              {% if request.session.currency %}
+                <div class="div2">{{ month.price|divide:request.session.currency }} $</div>
+              {% else %}
+                <div class="div2">{{ month.price }} ₽</div>
+              {% endif %}
+              <div class="div3">{% if month.rate_field > 0 %} <span class="red">+{{ month.rate_field }}<span> {% else %} <span class="green">{{ month.rate_field }}</span> {% endif %} %</div> 
+            </div>
+          {% endfor %}
+        </div>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <div class="foot__container">
+      <div class="foot__content">
+        <div class="foot__copyright">
+          © RuEstate
+        </div>
+        <div class="foot__list">
+          <a href="{% url 'index' %}">Главная</a>
+          <a href="{% url 'dashboard' %}">Доска</a>
+          <a href="{% url 'report' %}">Отчеты</a>
+          <a href="{% url 'contact' %}">Контакты</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+  </div>
+
+</body>
+</html>

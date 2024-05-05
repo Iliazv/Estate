@@ -1,0 +1,203 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'api/style.css' %}">
+    <script src="{% static 'api/switch.js' %}" defer></script>
+    <script src="{% static 'api/modal.js' %}" defer></script>
+    <script src="{% static 'api/account.js' %}" defer></script>
+    <link rel="shortcut icon" href="{% static 'api/images/logo.png' %}" />
+    <title>RuEstate</title>
+</head>
+<body>
+  <div class="wrapper">
+  <div class="content">
+    <nav class="menu">
+        <div class="menu__container">
+          <div class="menu__upper">
+            <div class="menu__logo">
+              <span class="menu__label">RuEstate</span>
+              <img src="../static/api/images/logo.png" alt="" class="head__logo_image">
+            </div>
+            <div class="menu__search">
+              <input type="text" class="menu__field" placeholder="Поиск" />
+              <button><img src='../static/api/images/search.png' alt="" /></button>
+            </div>
+          </div>
+          <div class="menu__lower">
+            <div class="menu__list">
+              <a href="{% url 'index' %}">Главная</a>
+              <a href="{% url 'dashboard' %}">Доска</a>
+              <a href="{% url 'report' %}">Отчеты</a>
+              <a href="{% url 'contact' %}">Контакты</a>
+            </div>
+            <div class="menu__action">
+              <div class="menu__lang">
+                <a href="{% url 'remain_currency' %}">₽</a>
+              </div>
+              <div class="menu__lang">
+                <a href="{% url 'change_currency' %}">$</a>
+              </div>
+              <div class="menu__login">
+                {% if not request.user.is_authenticated %}
+                  <a href="#" id="login-button">Войти</a>
+                {% else %}
+                  <a href="#" id="account-button">{{ request.user.email }}</a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <div class="account hidden">
+        <div class="account__body">
+          <div class="account__head">
+            Аккаунт
+          </div>
+          <div>
+            Пользователь: {{ request.user.email }} <br><br>
+            Роль:
+            {% if request.user.is_superuser  %} 
+            Админ
+            {% else  %}
+            Клиент
+            {% endif %}
+          </div>
+          <div>
+            <a href="{% url 'logout_view' %}" class="account__quit">Выйти</a>
+          </div>
+        </div>
+      </div>
+      {% if modal == 'login' %}
+      <div class="modal opened">
+      {% else %}
+      <div class="modal hidden">
+      {% endif %}
+        <div class="modal__body">
+          <div class="modal__login">
+            Войти в аккаунт
+          </div>
+          <form action="{% url 'login' %}" method="POST" class="modal__form">
+            {% csrf_token %}
+            <input type="email" class="modal__field" name="email" placeholder="E-mail" required>
+            <input type="password" class="modal__field" name="password" placeholder="Пароль" required>
+            <a href="#" class="modal__forget">Забыли пароль?</a>
+            {% if modal == 'login' %}
+            <span class="modal__message">Введенные данные неверны</span>
+            {% endif %}
+            <button class="modal__button">Войти</button>
+            <a href="#" class="modal__toward" id="register-button"><img src="../static/api/images/exit.png" alt="" class="modal__ico"> Регистрация</a>
+          </form>
+        </div>
+        <div class="modal__cross" id="cross-button">
+          &times;
+        </div>
+      </div>
+      {% if modal == 'register' %}
+      <div class="modalreg opened">
+      {% else %}
+      <div class="modalreg hidden">
+      {% endif %}
+        <div class="modal__body">
+          <div class="modal__login">
+            Регистрация аккаунта
+          </div>
+          <form action="{% url 'register' %}" method="POST" class="modal__form_second">
+            {% csrf_token %}
+            {% for field in form %}
+            <!-- <div class="popup__input"> -->
+                <input 
+                    type="{% if 'password' in field.label_tag %}password{% else %}email{% endif %}"
+                    name="{{ field.html_name }}"
+                    id="password-{{ forloop.counter }}"
+                    {% if field.id_for_label == 'id_email' %}
+                        placeholder="Email"
+                        class="modal__field"
+                    {% elif field.id_for_label == 'id_password1' %}
+                        placeholder="Пароль"
+                        class="modal__field"
+                    {% else %}
+                        placeholder="Подтверждение пароля"
+                        class="modal__field"
+                    {% endif %}
+                    required
+                >
+            {% endfor %}
+            {% if modal == 'register' %}
+            <span class="modal__message">Введенные данные некорректны</span>
+            {% endif %}
+            <button type="submit" class="modal__button">Регистрация</button>
+            <a href="#" class="modal__toward" id="login-button-switch"><img src="../static/api/images/exit.png" alt="" class="modal__ico"> Войти</a>
+          </form>
+        </div>
+        <div class="modal__cross" id="cross-button-reg">
+          &times;
+        </div>
+      </div>
+      {% if modal == 'register' or modal == 'login' %}
+        <div class="overlay opened" id="overlay"></div>
+      {% else %}
+        <div class="overlay hidden" id="overlay"></div>
+      {% endif %}
+    
+    <div class="frame">
+        <div class="title">RuEstate - Контакты</div>
+        <div class="card">Алтайский край</div>
+        <div class="contain">
+          <div class="page__description">Вопросы по оформлению, получению и оплаты отчетов, претензии по качеству заказа направляются по адресу: service@vsemayki.ru</div>
+          <a href="{% url 'agreement' %}" target="_blank" class="page__agree">Пользовательское соглашение</a>
+          <div class="page__payment page__refund">РЕКВИЗИТЫ ООО ВСЕМАРКЕТ</div>
+          <div class="page__description">
+              <ul class="page__many">
+                  <li class="page__condition">Общество с ограниченной ответственностью «ВСЕМАРКЕТ»</li>
+                  <li class="page__condition">Почтовый адрес: 630007, г.Новосибирск, Красный проспект, дом 2/1, этаж: отметка -3,500, помещение 7</li>
+                  <li class="page__condition">ОГРН 1205400034344</li>
+                  <li class="page__condition">ИНН 5406807316</li>
+                  <li class="page__condition">Р/с 40702810923000008396</li>
+                  <li class="page__condition">в Филиал «Новосибирский» АО «АЛЬФА-БАНК» г. Новосибирск</li>
+                  <li class="page__condition">БИК 045004774</li>
+              </ul>
+          </div>
+          <div class="page__payment page__refund">Наши телефоны:</div>
+          <div class="page__column">
+              <div class="page__cities">
+                  <div class="page__city">В Москве</div>
+                  <div class="page__city">В Санкт-Петербурге</div>
+                  <div class="page__city">В Новосибирске</div>
+                  <div class="page__city">В Нижнем Новгороде</div>
+                  <div class="page__city">В Казане</div>
+                  <div class="page__city">В Самаре</div>
+              </div>
+              <div class="page__phones">
+                  <a href='tel:+74956468769' class="page__phone">+7 (495) 646-87-67</a>
+                  <a href='tel:+78126482438' class="page__phone">+7 (812) 648-24-33</a>
+                  <a href='tel:+73432885154' class="page__phone">+7 (343) 288-51-59</a>
+                  <a href='tel:+73432775159' class="page__phone">+7 (343) 288-51-59</a>
+                  <a href='tel:+73452885159' class="page__phone">+7 (343) 288-51-59</a>
+                  <a href='tel:+77342685159' class="page__phone">+7 (343) 288-51-59</a>
+              </div>
+          </div>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <div class="foot__container">
+      <div class="foot__content">
+        <div class="foot__copyright">
+          © RuEstate
+        </div>
+        <div class="foot__list">
+          <a href="{% url 'index' %}">Главная</a>
+          <a href="{% url 'dashboard' %}">Доска</a>
+          <a href="{% url 'report' %}">Отчеты</a>
+          <a href="{% url 'contact' %}">Контакты</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+  </div>
+
+</body>
+</html>
